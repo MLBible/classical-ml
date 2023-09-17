@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title></title>
+  <title>{{ page.title }}</title>
   <script type="text/javascript" async
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
@@ -23,16 +23,6 @@
   </script>
 </head>
 <body>
-  <h1 id="getting-started">Getting Started</h1>
-
-<ul>
-  <li>
-    <p><a href="simple-linear-regression/">Simple Linear Regression</a></p>
-  </li>
-  <li>
-    <p><a href="multiple-linear-regression/">Multiple Linear Regression</a></p>
-  </li>
-</ul>
-
+  {{ content }}
 </body>
 </html>
