@@ -1,6 +1,7 @@
 ---
-layout: layout
+layout: default
 permalink: /
+title: Home
 ---
 # Getting Started
 

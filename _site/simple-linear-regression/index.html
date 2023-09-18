@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title></title>
+  <title>Simple Linear Regression</title>
   <script type="text/javascript" async
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
@@ -23,6 +23,8 @@
   </script>
 </head>
 <body>
+  <h1>Simple Linear Regression</h1>
+  <ul><li><a href="#introduction">Introduction</a></li><li><a href="#estimating-the-coefficients--by-the-method-of-least-squares">Estimating the Coefficients  by the method of Least-Squares</a></li><li><a href="#standard-errors-for-hatbeta_0-and-hatbeta_1">Standard Errors for \(\hat{\beta}_0\) and \(\hat{\beta}_1\)</a></li><li><a href="#confidence-intervals-for-hatbeta_0-and-hatbeta_1">Confidence Intervals for \(\hat{\beta}_0\) and \(\hat{\beta}_1\)</a></li><li><a href="#evaluating-the-model">Evaluating the Model</a><ul><li><a href="#residual-standard-error-rse">Residual Standard Error (RSE)</a></li><li><a href="#the-r2-statistic">The \(R^2\) Statistic</a></li></ul></li></ul>
   <h1 id="introduction">Introduction</h1>
 <p>Let’s say that we have some points that roughly look like they are forming a line. The goal of linear regression is to draw the line \(y = \beta_0 + \beta_1 x\) that passes as close to these points as possible. It is a very straightforward simple linear approach for predicting a quantitative response \(Y\) on the basis of a single predictor variable \(X\). It assumes that there is approximately a linear relationship between X and Y .</p>
 

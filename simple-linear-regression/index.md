@@ -1,5 +1,6 @@
 ---
 layout: layout
+title: Simple Linear Regression
 ---
 # Introduction
 Let’s say that we have some points that roughly look like they are forming a line. The goal of linear regression is to draw the line $$y = \beta_0 + \beta_1 x$$ that passes as close to these points as possible. It is a very straightforward simple linear approach for predicting a quantitative response $$Y$$ on the basis of a single predictor variable $$X$$. It assumes that there is approximately a linear relationship between X and Y .
