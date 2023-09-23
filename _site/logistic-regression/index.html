@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Logistic Regression</title>
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        processEscapes: true
+      },
+      "HTML-CSS": {
+        linebreaks: {
+          automatic: true
+        },
+        availableFonts: ["TeX"]
+      },
+      showMathMenu: true
+    });
+  </script>
+</head>
+<body>
+  <h1>Logistic Regression</h1>
+  <ul><li><a href="#introduction">Introduction</a></li><li><a href="#estimating-the-regression-coefficients">Estimating the Regression Coefficients</a></li><li><a href="#multinomial-logistic-regression-or-softmax-regression">Multinomial Logistic Regression or Softmax Regression</a></li><li><a href="#cross-entropy-loss">Cross Entropy Loss</a></li></ul>
+  <h1 id="introduction">Introduction</h1>
+
+<p>Logistic Regression is commonly used to estimate the probability that an instance belongs to a particular class. If the estimated probability is greater than 50%, then the model predicts that the instance belongs to that class (called the positive class, labeled “1”), and otherwise it predicts that it does not (i.e., it belongs to the negative class, labeled “0”). This makes it a binary classifier.
+Logistic regression estimates probabilities by using a logistic function.</p>
+
+<blockquote style="background-color: #FFFFE0; padding: 10px;">
+<b>
+ALERT! Even though it has regression in the name, it is used for classification.
+</b>
+</blockquote>
+
+<p>The multi-class version of logistic regression is often referred to as multinomial logistic regression. Let \(C = \{1, 0\}\). For notation convenience, write:</p>
+
+\[p(x) = \Pr(Y = 1 | X = x), \quad \text{and} \quad 1 - p(x) = \Pr(Y = 0 | X = x) \tag{1}\]
+
+<p>The log-odds function $f(x)$ is defined as \(\log \left(\frac{p(x)}{1 - p(x)}\right)\). The linear logistic regression model assumes that</p>
+
+\[\log\left(\frac{p(x)}{1 - p(x)}\right) = \beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p = \beta_0 + x^T \beta, \tag{2}\]
+
+<p>The quantity \(\left(\frac{p(x)}{1 - p(x)}\right)\) is called the <em>odds</em> and can take on any value between 0 and $\infty$. Values of the odds close to 0 and $\infty$ indicate very low and very high probabilities of default, respectively. For example, on average, 1 in 5 people with odds of $1/4$ will default, since $p(x) = 0.2$ implies an odds of $\frac{0.2}{1 - 0.2} = \frac{1}{4}$. Likewise, on average, nine out of every ten people with odds of 9 will default, since $p(x) = 0.9$ implies an odds of $\frac{0.9}{1 - 0.9} = 9$.</p>
+
+<p>We can write Eq. 2 as-</p>
+
+\[p(x) = \frac{\exp(\beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p)}{1 + \exp(\beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p)} \tag{3}\]
+
+<p>Notice that for low balances, we now predict the probability of default as close to, but never below, zero. Likewise, for high balances, we predict a default probability close to, but never above, one. The logistic function will always produce an S-shaped curve of this form, and so regardless of the value of $X$, we will obtain a sensible prediction. The logistic model is better able to capture the range of probabilities than is the linear regression model.</p>
+
+<p>In a linear regression model, $\beta_1$ gives the average change in $Y$ associated with a one-unit increase in $X$. In contrast, in a logistic regression model, increasing $X$ by one unit changes the log odds by $\beta_1$, or equivalently, it multiplies the odds by $e^{\beta_1}$. However, because the relationship between $p(X)$ and $X$ is not a straight line, $\beta_1$ does not correspond to the change in $p(X)$ associated with a one-unit increase in $X$. The amount that $p(X)$ changes due to a one-unit change in $X$ will depend on the current value of $X$. But regardless of the value of $X$, if $\beta_1$ is positive, then increasing $X$ will be associated with increasing $p(X)$, and if $\beta_1$ is negative, then increasing $X$ will be associated with decreasing $p(X)$.</p>
+
+<h1 id="estimating-the-regression-coefficients">Estimating the Regression Coefficients</h1>
+
+<p>The coefficients \(\beta_0, \beta_1, \ldots, \beta_p\) are unknown and must be estimated based on the available training data. For simple linear regression, we used the least squares approach to estimate the unknown linear regression coefficients. Although we could use (non-linear) least squares to fit the model (3), the more general method of maximum likelihood is preferred, since it has better statistical properties.</p>
+
+<p>The basic intuition behind using maximum likelihood to fit a logistic regression model is as follows: we seek estimates for \(\beta_0, \beta_1, \ldots, \beta_p\) such that the predicted probability $\hat{p}(x_i)$ of each training sample, corresponds as closely as possible to the observed value. This intuition can be formalized using a mathematical equation called a likelihood function:</p>
+
+\[\text{L}(\beta_0, \beta_1, \ldots, \beta_p) = \prod_{i:y_i=1} p(x_i) \prod_{i:y_i=0} (1 - p(x_i)) \tag{4}\]
+
+<p>The estimates \(\hat{\beta}_0, \hat{\beta}_1, \ldots, \hat{\beta}_p\) are chosen to maximize this likelihood function.</p>
+
+<p>This cost function makes sense because, $-\log(t)$ grows very large when $t$ approaches 0, so the cost will be large if the model estimates a probability close to 0 for a positive instance, and it will also be very large if the model estimates a probability close to 1 for a negative instance. On the other hand, $-\log(t)$ is close to 0 when $t$ is close to 1, so the cost will be close to 0 if the estimated probability is close to 0 for a negative instance or close to 1 for a positive instance, which is precisely what we want.</p>
+
+<p>Alternatively, we can write the likehood in the form of a cost function as below:</p>
+
+\[C(\beta_0, \beta_1, \ldots, \beta_p) = -\sum_{i=1}^{m} [y^{(i)}\log(\hat{p}^{(i)}) + (1 - y^{(i)})\log(1 - \hat{p}^{(i)})] \tag{5}\]
+
+<p>This is called the <em>log loss cost function</em>.
+The bad news is that there is no known closed-form equation to compute the value of \(\beta's\) that minimizes this cost function (there is no equivalent of the Normal Equation). The good news is that this cost function is convex, so Gradient Descent (or any other optimization algorithm) is guaranteed to find the global minimum (if the learning rate is not too large and you wait long enough). The partial derivatives of the cost function with regard to \(\beta_j\) is given by -</p>
+
+\[\frac{\partial C}{\partial \beta_j} = \frac{1}{m} \sum_{i=1}^{m} (\sigma(\beta^{\top}x^{(i)}) - y^{(i)})x_{j}^{(i)} \tag{6}\]
+
+<p>This equation computes the prediction error and multiplies it by the j feature value, and then it computes the average over all training instances. Once you have the gradient vector containing all the partial derivatives, you can use it in the Batch Gradient Descent algorithm.</p>
+
+<h1 id="multinomial-logistic-regression-or-softmax-regression">Multinomial Logistic Regression or Softmax Regression</h1>
+
+<p>The Logistic Regression model can be generalized to support multiple classes directly, without having to train and combine multiple binary classifiers. This is called Softmax Regression, or Multinomial Logistic Regression.</p>
+
+<p>The idea is simple: when given an instance $x$, the Softmax Regression model first computes a score $s_k(x)$ for each class $k$, then estimates the probability of each class by applying the softmax function (also called the normalized exponential) to the scores. The equation to compute $s_k(x)$ is just like the equation for Linear Regression prediction.</p>
+
+\[s_k(x) = x^\top\beta^{(k)}\]
+
+<p>Note that each class has its own dedicated parameter vector $\beta^{(k)}$. Once you have computed the score of every class for the instance $x$, you can estimate the probability $\hat{p}$ that the instance belongs to class $k$ by running the scores through the softmax function (Equation 7 below). The function computes the exponential of every score, then normalizes them (dividing by the sum of all the exponentials). The scores are generally called logits or log-odds (although they are actually unnormalized log-odds).</p>
+
+\[\hat{p}_k = \sigma(s(x))_k = \frac{\exp(s_k(x))}{\sum_{j=1}^{K} \exp(s_j(x))} \tag{7}\]
+
+<p>In this equation:</p>
+
+<ul>
+  <li>\(K\) is the number of classes.</li>
+  <li>\(s(x)\) is a vector containing the scores of each class for the instance \(x\).</li>
+  <li>\(\sigma(s(x))_k\) is the estimated probability that the instance $x$ belongs to class $k$, given the scores of each class for that instance.</li>
+</ul>
+
+<p>Just like the Logistic Regression classifier, the Softmax Regression classifier predicts the class with the highest estimated probability (which is simply the class with the highest score), as shown below-</p>
+
+\[\hat{y} = \underset{k}{\text{argmax}} \ \ \sigma(s(x))_k = \underset{k}{\text{argmax}} \ \left( \left( x^\top\beta^{(k)}\right)\right) \tag{8}\]
+
+<p>The $\text{argmax}$ operator returns the value of a variable that maximizes a function. In this equation, it returns the value of $k$ that maximizes the estimated probability $\sigma(s(x))_k$.</p>
+
+<h1 id="cross-entropy-loss">Cross Entropy Loss</h1>
+
+<p>The cross entropy loss is defined as -</p>
+
+\[C = -\frac{1}{m}\sum_{i=1}^{m} \sum_{k=1}^{K} y_{k}^{(i)} \log(\hat{p}_{k}^{(i)}) \tag{9}\]
+
+<p>In this equation, \(y_{k}^{(i)}\) represents the target probability that the \(i^{\text{th}}\) instance belongs to class <em>k</em>. In general, it takes on either the value 1 or 0, depending on whether the instance belongs to class <em>k</em> or not. Minimizing this cost function should penalize the model when it estimates a low probability for a target class. Cross entropy is frequently used to measure how well a set of estimated class probabilities matches the target classes.</p>
+
+<p>Notice that when there are just two classes (K = 2), this cost function is equivalent to the Logistic Regression’s cost function (log loss; see Equation 5).</p>
+
+<p>The gradient vector of this cost function with regard to \(\beta^{(k)}\) is given by -</p>
+
+\[\nabla_{\beta^{(k)}} C = \frac{1}{m} \sum_{i=1}^{m} \left(\hat{p}^{(i)}_{k} - y^{(i)}_{k}\right)x^{(i)}\]
+
+<p>Now you can compute the gradient vector for every class, then use Gradient Descent (or any other optimization algorithm) to find the parameters that minimizes the cost function.</p>
+
+</body>
+</html>

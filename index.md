@@ -8,3 +8,7 @@ title: Home
 - [Simple Linear Regression](simple-linear-regression/)
 
 - [Multiple Linear Regression](multiple-linear-regression/)
+
+- [Logistic Regression](logistic-regression/)
+
+- [Naive Bayes and LDA](naive-bayes/)
