@@ -32,103 +32,169 @@ $$
 h_{\text{Bayes}}(x) = \underset{k}{\text{argmax}} \ \hat{\pi}_k \hat{f}_k(x)
 $$
 
-In the Naive Bayes approach, we make the (rather naive) generative assumption that given the label, the features are independent of each other. That is,
+# Kernel Density Classifier
+
+The kernel density classifier uses a nonparametric _kernel density estimator_ to estimate the density function of $X$ given $Y$, and then plugs the density estimator into the Bayes formula to estimate the Bayes rule. Let $X_1, \ldots, X_n$ be a random sample from a $d$-dimensional distribution with density $f(x)$. Then a kernel density estimator of $f(x)$ is given by
 
 $$
-P[X = x \ \vert \ Y = y] = \prod_{i=1}^d P[X_i = x_i \ \vert \ Y = y].
+\hat{f}_h(x) = \frac{1}{n} \sum_{i=1}^{n} h^{-d}K\left(\frac{X_i - x}{h}\right), \tag{3}
 $$
 
-With this assumption and using the Bayes rule, the Bayes optimal classifier can be further simplified:
+where $K$ is a non-negative density function, called a kernel function, so that $f(x)$ is a legitimate density function. For example, a commonly-used kernel function is the standard Gaussian density. The parameter $h$ is called the bandwidth. KDE simply distributes the point $X_i$ by a smoothed function:
+
+$$
+h^{-d}K\left(\frac{X_i - x}{h}\right)
+$$
+
+for a small $h$. Typically, the kernel function is fixed, and the bandwidth $h$ is chosen to trade off biases and variances. Basically, the optimal $h$ depends on the kernel function and the underlying density function. For each sub-sample of class $k$, we apply the kernel density estimator to construct $f_k(x)$ and then use the $\text{argmax}$ rule to predict the class label at $x$. 
+
+<blockquote style="background-color: #FFFFE0; padding: 10px;">
+<b>
+The kernel density classifier is quite straightforward both conceptually and computationally, but it is not recommended when the dimension is 3 or higher, due to the “curse-of-dimensionality”.
+</b>
+</blockquote>
+
+# Linear and Quadratic Discriminant Analysis
+
+Linear discriminant analysis (LDA) and quadratic discriminant analysis (QDA) are model-based methods for classification. LDA and QDA models start with the assumption that the conditional distribution of $$X$$ given $$Y$$ is a multivariate normal distribution (also known as Gaussian Distribution) i.e. $$(X\ \vert \ y = k) \sim N(μ_k, Σ_k)$$. Hence,
+
+$$
+f_k(x) = \frac{1}{\sqrt{2\pi \ \vert \Sigma_k\ \vert}} \exp\left(-\frac{1}{2}(x - μ_k)^T Σ_k^{-1}(x - μ_k)\right)
+$$
+
+Under this assumption, the Bayes rule as in Eq. 2 can be written as
+
+$$
+\underset{k}{\text{argmax}} \ \delta_k(x)
+$$
+
+where
+
+$$
+\delta_k(x) = \log\pi_k - \frac{1}{2}\log\ \vert \ \Sigma_k\ \vert \  - \frac{1}{2}(x - μ_k)^T \Sigma_k^{-1}(x - μ_k) \tag{4}
+$$
+
+<blockquote style="background-color: #FFFFE0; padding: 10px;">
+<b>
+We can see that the Bayes rule is a quadratic function of $x$, hence the name <i>Quadratic Discriminant</i>. This classification rule is very intuitive: except for some constants to reflect prior knowledge, the QDA classifies a point $x$ according to its Mahalanobis distance to the centroids $μ_k$, defined by $\left(x - μ_k\right)^T \Sigma_k^{-1}\left(x - μ_k\right)$. When $\pi_k$ and $\Sigma_k$ are independent of $k$, this is exactly the nearest centroid classification.
+</b>
+</blockquote>
+
+
+
+QDA substitutes the parameters in (4) with the following estimates:
 
 $$
 \begin{eqnarray}
-h_{\text{Bayes}}(x) & = & 
-\underset{y \in \{0,1\}}{\text{argmax}} \ \ P[Y = y \ \vert \ X = x] \nonumber \\
-& = & \underset{y \in \{0,1\}}{\text{argmax}} \ \  P[Y = y]P[X = x \ \vert \ Y = y] \nonumber \\
-& = & \underset{y \in \{0,1\}}{\text{argmax}} \ \ P[Y = y] \prod_{i=1}^d P[X_i = x_i \ \vert \ Y = y] \tag{2}
+\hat{\pi}_k & = & \frac{n_k}{n}, \\
+\hat{\mu}_k & = & \frac{1}{n_k} \sum_{Y_i=c_k} X_i, \\
+\hat{\Sigma}_k & = & \frac{1}{n_k - 1} \sum_{Y_i=c_k} (X_i - \hat{\mu}_k)(X_i - \hat{\mu}_k)^T,
 \end{eqnarray}
 $$
 
-That is, now the number of parameters we need to estimate is only $$2d + 1$$.
-
-When we also estimate the parameters using the maximum likelihood principle, the resulting classifier is called the Naive Bayes classifier.
-
-# Linear Discriminant Analysis
-
-As in the Naive Bayes classifier, we consider the problem of predicting a label $$y \in \{0,1\}$$ on the basis of a vector of features $$x = (x_1, \ldots, x_d)$$. But now the generative assumption is as follows. First, we assume that $$P[Y = 1] = P[Y = 0] = 1/2$$. Second, we assume that the conditional probability of $$X$$ given $$Y$$ is a Gaussian distribution. Finally, the covariance matrix of the Gaussian distribution is the same for both values of the label. Formally, let $$\mu_0, \mu_1 \in \mathbb{R}^d$$ and let $$\Sigma$$ be a covariance matrix. Then, the density distribution is given by:
+where $$n_k$$ is the number of observations in class $$k$$. Thus, the QDA rule is:
 
 $$
-P[X = x\ \vert \ Y = y] = \frac{1}{(2\pi)^{d/2}\ \vert \ \Sigma\ \vert \ ^{1/2}} \exp \left(-\frac{1}{2}(x - \mu_y)^T \Sigma^{-1}(x - \mu_y)\right) \tag{3}
+\underset{k}{\text{argmax}} \left\{\log \hat{\pi}_k - \frac{1}{2} \log \ \vert \ \hat{\Sigma}_k\ \vert \  - \frac{1}{2}(x - \hat{\mu}_k)^T \hat{\Sigma}_k^{-1}(x - \hat{\mu}_k)\right\}.
 $$
 
-As we have shown in the previous section, using the Bayes rule we can write:
+
+LDA uses the additional homogeneous covariance assumption:
 
 $$
-h_{\text{Bayes}}(x) = \underset{y \in \{0,1\}}{\text{argmax}} \ P[Y = y]\ P[X = x\ \vert \ Y = y] \tag{4}
+\Sigma_k = \Sigma \text{ for all } k.
 $$
 
-This means that we will predict $$h_{\text{Bayes}}(x) = 1$$ iff:
+As a result, the quadratic term $$x^T \hat{\Sigma}_k^{-1} x$$ and the $$\log \vert \hat{\Sigma}_k\vert$$ are independent of $$k$$. Hence, the Bayes rule has a simpler form:
+
+$$
+\underset{k}{\text{argmax}} \ \delta_{\text{lda}}^k(x)
+$$
+
+where
+
+$$
+\delta_{\text{lda}}^k(x) = \mu_k^T \Sigma^{-1} x - \frac{1}{2}\mu_k^T \Sigma^{-1} \mu_k + \log \pi_k. \tag{5}
+$$
+
+Now the Bayes rule is a linear function of $$x$$ and hence a linear discriminant. It is also referred to as Fisher's discriminant analysis. Note that Fisher's original derivation was geometric, not based on the probabilistic LDA model. In applications, it is observed that LDA can perform quite well although the LDA model assumptions are clearly violated. Let $$K$$ be the number of classes. LDA estimates $$\Sigma$$ with the pooled sample covariance:
+
+$$
+\hat{\Sigma} = \frac{1}{\sum_{k=1}^{K} (n_k - 1)} \sum_{k=1}^{K} (n_k - 1) \hat{\Sigma}_k.
+$$
+
+The LDA rule is:
+
+$$
+\underset{k}{\text{argmax}} \left\{\hat{\mu}_k^T \hat{\Sigma}^{-1} x - \frac{1}{2}\hat{\mu}_k^T \hat{\Sigma}^{-1} \hat{\mu}_k + \log \hat{\pi}_k\right\}. \tag{6}
+$$
+
+In particular, if there are only two classes $$\{0, 1\}$$, then the rule classifies an observation to Class 1 if and only if:
 
 $$
 \log\left(\frac{P[Y = 1]P[X = x\ \vert \ Y = 1]}{P[Y = 0]P[X = x\ \vert \ Y = 0]}\right) > 0.
 $$
 
-This ratio is often called the log-likelihood ratio. In our case, the log-likelihood ratio becomes:
+This ratio is often called the log-likelihood ratio. In our case, this gives:
 
 $$
-\frac{1}{2}(x - \mu_0)^T \Sigma^{-1}(x - \mu_0) - \frac{1}{2}(x - \mu_1)^T \Sigma^{-1}(x - \mu_1).
+(x - \hat{\mu}_a)^T \hat{\Sigma}^{-1}(\hat{\mu}_1 - \hat{\mu}_0) + \log \frac{\hat{\pi}_1}{\hat{\pi}_0} > 0. \tag{7}
 $$
 
-We can rewrite this as $$w^Tx + b$$ where
+where $$\mu_a = \frac{\hat{\mu}_0 + \hat{\mu}_1}{2}$$.
+
+If we further assume that, $$\hat{\pi}_0 = \hat{\pi}_1$$, then Eq. 7 can be written as -
 
 $$
-w = (\mu_1 - \mu_0)^T \Sigma^{-1} \quad \text{and} \quad b = \frac{1}{2}\left(\mu_0^T \Sigma^{-1}\mu_0 - \mu_1^T \Sigma^{-1}\mu_1 \right) \tag{5}
+\frac{1}{2}(x - \mu_0)^T \Sigma^{-1}(x - \mu_0) - \frac{1}{2}(x - \mu_1)^T \Sigma^{-1}(x - \mu_1) > 0
+$$
+
+We can rewrite this as $$w^Tx + b > 0 $$ where
+
+$$
+w = (\mu_1 - \mu_0)^T \Sigma^{-1} \quad \text{and} \quad b = \frac{1}{2}\left(\mu_0^T \Sigma^{-1}\mu_0 - \mu_1^T \Sigma^{-1}\mu_1 \right)
 $$
 
 
-As a result of the preceding derivation, we obtain that under the aforementioned generative assumptions, the Bayes optimal classifier is a linear classifier. Additionally, one may train the classifier by estimating the parameters $$\mu_0, \mu_1$$, and $$\Sigma$$ from the data, using, for example, the maximum likelihood estimator. With those estimators at hand, the values of $$w$$ and $$b$$ can be calculated as in Equation (5).
+# Regularized Discriminant Analysis
 
----
-
-
-The kernel density classifier uses a nonparametric kernel density estimator to estimate the density function of $X$ given $Y$, and then plugs the density estimator into the Bayes formula to estimate the Bayes rule. 
-
-
-
-To carry out the idea in (12.14), we often use the kernel density estimator (KDE) (Parzen, 1962; Epanechnikov, 1969; Silverman, 1998). Let $X_1, \ldots, X_n$ be a random sample from a $p$-dimensional distribution with density $f(x)$. Then a kernel density estimator of $f(x)$ is given by
+When $$p$$ is moderately large, $$\Sigma$$ cannot be accurately estimated for moderate sample size, and the computation of $$\hat{\Sigma}^{-1}$$ can be very unstable. If $$p \geq n$$, $$\hat{\Sigma}$$ is not even full rank. Friedman (1989) suggested regularized discriminant analysis (RDA) which uses the following shrinkage estimators:
 
 $$
-\hat{f}_h(x) = \frac{1}{n} \sum_{i=1}^{n} h^{-p}K\left(\frac{X_i - x}{h}\right),
+\hat{\Sigma}^{\text{rda}}(\gamma) = \gamma \hat{\Sigma} + (1 - \gamma)\frac{\text{tr}(\hat{\Sigma})}{p}\hat{\mathbf{I}}, \quad 0 \leq \gamma \leq 1 \tag{8}
 $$
 
-where $K$ is a non-negative density function, called a kernel function, so that $f(x)$ is a legitimate density function. For example, a commonly-used kernel function is the standard Gaussian density. The parameter $h$ is called the bandwidth.
-
-KDE simply distributes the point $X_i$ by a smoothed function:
+is shrunken toward an identity matrix (up to a scalar) as $$\gamma \rightarrow 0$$ and
 
 $$
-h^{-p}K\left(\frac{X_i - x}{h}\right)
+\hat{\Sigma}^{\text{rda}}_k(\alpha, \gamma) = \alpha \hat{\Sigma}_k + (1 - \alpha)\hat{\Sigma}^{\text{rda}}(\gamma). \tag{9}
 $$
 
-for a small $h$. See Figure 12.2 for the case with $p = 1$. Typically, the kernel function is fixed, and the bandwidth $h$ is chosen to trade off biases and variances. There are many papers on data-driven choices of the bandwidth for KDE (Sheather and Jones, 1991; Jones, Marron, and Sheather, 1996). Basically, the optimal $h$ depends on the kernel function and the underlying density function.
+which is shrunken toward a common covariance matrix as $$\alpha \rightarrow 0$$. In practice, $$(α, γ)$$ are chosen from the data by cross-validation. 
 
-Now let us go back to equation (12.14). For each sub-sample of class $k$, we apply the kernel density estimator to construct $f_k(x)$ and then use the $\text{argmax}$ rule to predict the class label at $x$. The kernel density classifier is quite straightforward both conceptually and computationally, but it is not recommended when the dimension is 3 or higher, due to the “curse-of-dimensionality”.
+# Naive Bayes
+
 
 The naive Bayes classifier can be viewed as a much simplified kernel density classifier when the dimension is relatively large. The basic idea is very simple. Assume that given the class label, the features are conditionally independent. That is,
 
 $$
-f_k(x) = \prod_{j=1}^{p} f_{jk}(x_j) \text{ for all } k.
+f_k(x) = \prod_{j=1}^{d} f_{jk}(x_j) \text{ for all } k.
 $$
 
-The above independence assumption drastically simplifies the problem of density estimation. Instead of estimating a $p$-dimensional density function, we now estimate $p$ univariate density functions. Combining (12.14) and (12.19) yields the naive Bayes classifier
+The above independence assumption drastically simplifies the problem of density estimation. Instead of estimating a $d$-dimensional density function, we now estimate $d$ univariate density functions. With this assumption and using the Bayes rule, the Bayes optimal classifier can be further simplified:
 
 $$
-\underset{c_k \in C}{\text{argmax}} \ \pi_bk \prod_{j=1}^{p} f_{bjk}(x_j), \tag{12.20}
+\begin{eqnarray}
+h_{\text{Bayes}}(x) & = & 
+\underset{k}{\text{argmax}} \ \ P[Y = y \ \vert \ X = x] \nonumber \\
+& = & \underset{k}{\text{argmax}} \ \  P[Y = y]P[X = x \ \vert \ Y = y] \nonumber \\
+& = & \underset{k}{\text{argmax}} \ \ P[Y = y] \prod_{i=1}^d P[X_i = x_i \ \vert \ Y = y] \\
+& = & \underset{k}{\text{argmax}} \ \hat{\pi}_k \prod_{j=1}^{d} \hat{f}_{jk}(x_j)
+\end{eqnarray}
 $$
 
-where $f_{bjk}(x_j)$ is the univariate KDE for variable $X_j$ based on the $k$-th class of data. If $X_j$ is continuous, we can use the kernel density estimator for $f_{bjk}(x_j)$.
 
-Although the conditional independence assumption is very convenient, it is rather naive and too optimistic to be remotely true in reality. Hence one might wonder if the naive Bayes classifier is practically useful at all. Surprisingly, naive Bayes classifiers have worked very well in many complex real-world applications such as text classification (McCallum and Nigam, 1998). A possible explanation is that although individual class density estimates ($\prod_{j=1}^{p} f_{jk}(x_j)$) are poor estimators for the joint conditional density of the predictor vector, they might be good enough to separate the most probable class from the rest.
+where $$\hat{f}_{jk}(x_j)$$ is the univariate KDE for variable $X_j$ based on the $k$-th class of data. If $X_j$ is continuous, we can use the kernel density estimator for $$\hat{f}_{jk}(x_j)$$. That is, now the number of parameters we need to estimate is only $$kd + 1$$. When we also estimate the parameters using the maximum likelihood principle, the resulting classifier is called the Naive Bayes classifier.
 
-Another important use of the naive Bayes rule is to create augmented features.
 
----
+Although the conditional independence assumption is very convenient, it is rather naive and too optimistic to be remotely true in reality. Hence one might wonder if the naive Bayes classifier is practically useful at all. Surprisingly, naive Bayes classifiers have worked very well in many complex real-world applications such as text classification. A possible explanation is that although individual class density estimates ($\prod_{j=1}^{d} f_{jk}(x_j)$) are poor estimators for the joint conditional density of the predictor vector, they might be good enough to separate the most probable class from the rest. Another important use of the naive Bayes rule is to create augmented features.
