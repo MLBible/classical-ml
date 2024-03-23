@@ -12,3 +12,5 @@ title: Home
 - [Logistic Regression](logistic-regression/)
 
 - [Naive Bayes and LDA](naive-bayes/)
+
+- [Support Vector Machines](svm/)
