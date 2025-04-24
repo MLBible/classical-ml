@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title: Simple Linear Regression
 description: an example of a blog post with some math
 tags: formatting math
